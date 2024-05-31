@@ -71,16 +71,32 @@ async function createPoll(pollTitle) {
 async function getLastPollMessageId() {
     logger.log('INFO', 'Получение последнего голосования, созданного ботом.');
     try {
-        const updates = await bot.getUpdates({ limit: 50 });
+        let updates = await bot.getUpdates({ limit: 50 });
+        let pollMessage;
+        let attempsCount = 0;
+        //todo collect voters from updates
+        while (attempsCount < 10 && updates.length > 0) {
+            attempsCount++;
+            const messages = updates
+                .filter(update => update.message && update.message.reply_to_message)
+                .map(update => {
+                    return update.message.reply_to_message
+                })
+                .sort((a, b) => b.date - a.date);
 
-        const pollMessages = updates
-            .map(update => {
-                return update.message && update.message.reply_to_message
-            })
-            .filter(message => message && message.poll && message.chat.id === +channelId)
-            .sort((a, b) => b.date - a.date);
-        logger.log('INFO', `получено ${updates.length} отфильтрованно до ${pollMessages.length}`);
-        const pollMessage = pollMessages[0];
+            const pollMessages = messages.filter(message => message.poll && !message.poll.is_closed && message.chat.id === +channelId && message.from.is_bot)
+
+            logger.log('INFO', `получено ${messages.length} отфильтрованно до ${pollMessages.length}`);
+            pollMessage = pollMessages[0];
+
+            if (!pollMessage) {
+                logger.log('INFO', 'Последнее голосование не найдено. Получение следующих обновлений...');
+            } else {
+                break;
+            }
+
+            updates = await bot.getUpdates({ limit: 50, offset: (updates[updates.length-1].update_id + 1)});
+        }
 
         if (pollMessage) {
             logger.log('INFO', `Найдено последнее голосование с ID: ${pollMessage.message_id}`);

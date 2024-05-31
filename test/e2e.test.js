@@ -3,8 +3,10 @@ const { handler } = require('../index');
 //const logger = require('../logger');
 
 // Переключаем на тестовые данные
+
 process.env.BOT_TOKEN = process.env.BOT_TOKEN_TEST;
 process.env.CHANNEL_ID = process.env.CHANNEL_ID_TEST;
+
 /*
 logger.log = (level, message, stream_name) => {
     // Переопределяем логгер для тестов, чтобы не засорять вывод
@@ -18,7 +20,7 @@ describe('Telegram Bot E2E Tests', () => {
         const createPollEvent = {
             cmdKey: 'createPoll',
             args: {
-                pollTitle: 'Ваш любимый цвет? ' + (new Date()).toLocaleDateString()
+                pollTitle: 'Ваш любимый цвет? ' + (new Date()).toLocaleTimeString()
             }
         };
 
