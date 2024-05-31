@@ -36,7 +36,13 @@ let lastPollMessageId = null;
 module.exports.handler = async function (event, context) {
 
     try {
-        logger.log('INFO', 'Received event', 'main');
+        logger.log('INFO', `Received event.typeof=${typeof event} data=${JSON.stringify(event)}`, 'main');
+        logger.log('INFO', `Received context.typeof=${typeof context} data=${JSON.stringify(context)}`, 'main');
+
+        if (event.event_metadata && event.event_metadata.event_type === 'yandex.cloud.events.serverless.triggers.TimerMessage') {
+            event = JSON.parse(event.details.payload);
+            logger.log('INFO', `trigger event converted to json event.typeof=${typeof event} data=${JSON.stringify(event)}`, 'main');
+        }
 
         if (event.cmdKey === 'createPoll') {
             await createPoll(event.args.pollTitle);
