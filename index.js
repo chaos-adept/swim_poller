@@ -5,19 +5,6 @@ const logger = require('./logger');
 const botToken = process.env.BOT_TOKEN;
 const channelId = process.env.CHANNEL_ID;
 
-const predefine_animations_ids = [
-    'CgACAgQAAyEFAASAT1HzAAMaZljdtLWc6BUTRa5iNhTXHqI8aOEAAiADAAIopQxTpW3ziw_WnTc1BA',
-    "CgACAgQAAyEFAASAT1HzAAMbZljdvXMqmDwEOGpW7-aljI0_FysAAtQCAALq7BRTpSr-iv-iyAI1BA",
-    "CgACAgQAAyEFAASAT1HzAAMcZljdyyxl4nailthHkQ5I8UUD8Q4AAsYCAAKzaBRTiCo_yroUIh01BA",
-    "CgACAgQAAyEFAASAT1HzAAMdZljd0mAzkrAlUgtWVpVZ7vL-9LkAAkIDAALBghxQvXz7_iOebJU1BA",
-    "CgACAgQAAyEFAASAT1HzAAMdZljd0mAzkrAlUgtWVpVZ7vL-9LkAAkIDAALBghxQvXz7_iOebJU1BA",
-    "CgACAgQAAyEFAASAT1HzAAMeZljd2rKvfFQppoCgdKygH-WOd1gAAg0DAAKG0mxTMceLrTFG2mA1BA",
-    "CgACAgQAAyEFAASAT1HzAAMfZljd3mie_qGEWvhrGVuVXwTlOGIAAjIDAAJxNtRTAZtdk0oPYFM1BA",
-    "CgACAgQAAyEFAASAT1HzAAMgZljd46zEt3-7h54pH7AAASRWPREOAALKAgACXA4cU25h0CEo7yJuNQQ",
-    "CgACAgQAAyEFAASAT1HzAAMhZljd89Vf3w6Jxvp1BJhwIzlA848AAukCAAJp3BRTEFJtKwxDjEs1BA",
-    "CgACAgQAAyEFAASAT1HzAAMiZljd_s5D3RzgHf0IrvT4C4me7kgAAh8DAAL3PbRTCx2x1717gFo1BA",
-];
-
 if (!botToken) {
     throw new Error('BOT_TOKEN env var should be defined.');
 }
@@ -61,8 +48,6 @@ module.exports.handler = async function (event, context) {
 async function createPoll(pollTitle) {
     try {
         const pollOptions = ['Да', 'Нет'];
-        const animationId = predefine_animations_ids[Math.floor(Math.random()*predefine_animations_ids.length)];
-        await bot.sendAnimation(channelId, animationId);
         const pollMessage = await bot.sendPoll(channelId, pollTitle, pollOptions, {
             is_anonymous: false
         });
