@@ -1,0 +1,21 @@
+{
+    "name": "telegram-poll-bot",
+    "version": "1.0.0",
+    "description": "Telegram bot for creating and closing polls based on serverless events",
+    "main": "index.js",
+    "scripts": {
+      "start": "node index.js",
+      "test": "jest",
+      "e2e-test": "jest test/e2e.test.js",
+      "package": "zip -r dist/deploy.zip index.js logger.js package.json package-lock.json"
+    },
+    "dependencies": {
+      "dotenv": "^16.0.3",
+      "node-telegram-bot-api": "^0.61.0",
+      "winston": "^3.3.3"
+    },
+    "devDependencies": {
+      "jest": "^29.5.0"
+    }
+  }
+  
