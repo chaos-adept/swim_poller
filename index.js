@@ -5,6 +5,9 @@ const logger = require('./logger');
 const botToken = process.env.BOT_TOKEN;
 const channelId = process.env.CHANNEL_ID;
 
+const predefine_animations_ids = (process.env.POLL_START_ANIMATIONS_IDS
+        && JSON.parse(process.env.POLL_START_ANIMATIONS_IDS));
+
 if (!botToken) {
     throw new Error('BOT_TOKEN env var should be defined.');
 }
@@ -47,11 +50,14 @@ module.exports.handler = async function (event, context) {
 
 async function createPoll(pollTitle) {
     try {
-        const pollOptions = ['Да', 'Нет'];
+
+        const animationId = predefine_animations_ids[Math.floor(Math.random()*predefine_animations_ids.length)];
+        await bot.sendAnimation(channelId, animationId);
+
+        const pollOptions = ['Да', 'Нет', 'Посмотреть результаты'];
         const pollMessage = await bot.sendPoll(channelId, pollTitle, pollOptions, {
             is_anonymous: false
         });
-
 
         lastPollMessageId = pollMessage.message_id;
 
@@ -110,7 +116,7 @@ async function getLastPollMessageId() {
         logger.log('ERROR', `Ошибка при получении последнего голосования: ${error.message}`);
         throw error;
     }
-};
+}
 
 async function closeLastPoll() {
     try {
@@ -119,8 +125,11 @@ async function closeLastPoll() {
         if (lastPollMessageId) {
             const poll = await bot.stopPoll(channelId, lastPollMessageId);
 
-            const results = poll.options.map(option => `${option.text}: ${option.voter_count}`).join('\n');
-            const resultsMessage = `Результаты голосования - "${poll.question}" :\n${results} \n.\n.`;
+            const results = poll.options
+                                .filter(o => o.text !== 'Посмотреть результаты')
+                                .map(o => `${o.text}: ${o.voter_count}`).join('\n');
+
+            const resultsMessage = `Результаты голосования - "${poll.question}":\n${results}`;
 
             const pollResultMessage = await bot.sendMessage(channelId, resultsMessage);
 
