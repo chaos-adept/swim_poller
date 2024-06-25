@@ -36,8 +36,6 @@ module.exports.handler = async function (event, context) {
 
         if (event.cmdKey === 'createPoll') {
             await createPoll(event.args.pollTitle);
-        } else if (event.cmdKey === 'closeLastPoll') {
-            await closeLastPoll();
         } else {
             logger.log('ERROR', 'Unknown command', 'main');
             throw new Error('Unknown command');
@@ -88,85 +86,8 @@ async function createPoll(pollTitle) {
         lastPollMessageId = pollMessage.message_id;
 
         logger.log('INFO', `Poll created with title: ${pollTitle} id: ${lastPollMessageId}`, 'main');
-
-        await bot.pinChatMessage(channelId, lastPollMessageId, { disable_notification: true });
-        logger.log('INFO', `Poll pinned: ${lastPollMessageId}`, 'main');
-
     } catch (error) {
         logger.log('ERROR', `Error creating poll: ${error.message}`, 'main');
-        throw error;  // Пробрасываем ошибку дальше
-    }
-}
-
-
-// Функция для получения последнего голосования, созданного ботом
-async function getLastPollMessageId() {
-    logger.log('INFO', 'Получение последнего голосования, созданного ботом.');
-    try {
-        let updates = await bot.getUpdates({ limit: 50 });
-        let pollMessage;
-        let attempsCount = 0;
-        //todo collect voters from updates
-        while (attempsCount < 10 && updates.length > 0) {
-            attempsCount++;
-            const messages = updates
-                .filter(update => update.message && update.message.reply_to_message)
-                .map(update => {
-                    return update.message.reply_to_message
-                })
-                .sort((a, b) => b.date - a.date);
-
-            const pollMessages = messages.filter(message => message.poll && !message.poll.is_closed && message.chat.id === +channelId && message.from.is_bot)
-
-            logger.log('INFO', `получено ${messages.length} отфильтрованно до ${pollMessages.length}`);
-            pollMessage = pollMessages[0];
-
-            if (!pollMessage) {
-                logger.log('INFO', 'Последнее голосование не найдено. Получение следующих обновлений...');
-            } else {
-                break;
-            }
-
-            updates = await bot.getUpdates({ limit: 50, offset: (updates[updates.length-1].update_id + 1)});
-        }
-
-        if (pollMessage) {
-            logger.log('INFO', `Найдено последнее голосование с ID: ${pollMessage.message_id}`);
-        } else {
-            logger.log('INFO', 'Последнее голосование не найдено.');
-            throw new Error('Последнее голосование не найдено.');
-        }
-
-        return pollMessage ? pollMessage.message_id : null;
-    } catch (error) {
-        logger.log('ERROR', `Ошибка при получении последнего голосования: ${error.message}`);
-        throw error;
-    }
-}
-
-async function closeLastPoll() {
-    try {
-        lastPollMessageId = await getLastPollMessageId();
-        logger.log('INFO', `Poll id=${lastPollMessageId} is going to closed`, 'main');
-        if (lastPollMessageId) {
-            const poll = await bot.stopPoll(channelId, lastPollMessageId);
-
-            const results = poll.options
-                                .filter(o => o.text !== 'Посмотреть результаты')
-                                .map(o => `${o.text}: ${o.voter_count}`).join('\n');
-
-            const resultsMessage = `Результаты голосования - "${poll.question}":\n${results}`;
-
-            const pollResultMessage = await bot.sendMessage(channelId, resultsMessage);
-
-            await bot.pinChatMessage(channelId, pollResultMessage.message_id, { disable_notification: true });
-
-            logger.log('INFO', `Poll closed. Results: ${resultsMessage}`, 'main');
-        } else {
-            logger.log('WARN', 'No poll to close', 'main');
-        }
-    } catch (error) {
-        logger.log('ERROR', `Error closing poll: ${error.message}`, 'main');
         throw error;  // Пробрасываем ошибку дальше
     }
 }

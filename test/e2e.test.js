@@ -16,7 +16,7 @@ logger.log = (level, message, stream_name) => {
 describe('Telegram Bot E2E Tests', () => {
     jest.setTimeout(30000); // Увеличиваем таймаут для асинхронных операций
 
-    test('Create and Close Poll', async () => {
+    test('Create Poll', async () => {
         const createPollEvent = {
             cmdKey: 'createPoll',
             args: {
@@ -31,12 +31,6 @@ describe('Telegram Bot E2E Tests', () => {
         // Создаем голосование
         console.log('Creating poll...');
         await handler(createPollEvent);
-        
-        // Закрываем голосование через 5 секунд
-        await new Promise(resolve => setTimeout(resolve, 5000));
-        
-        console.log('Closing poll...');
-        await handler(closePollEvent);
 
         // Проверка завершена успешно, если код дошел до этой точки без ошибок
         console.log('Test completed successfully.');
