@@ -48,11 +48,37 @@ module.exports.handler = async function (event, context) {
     }
 };
 
+async function sendPollAnimation() {
+    const work_arround_send_attempts_count = 3;
+
+
+        if (predefine_animations_ids) {
+            let lastError;
+            let attemptNum = 0;
+
+            while (attemptNum < work_arround_send_attempts_count) {
+                let animationId;
+                try {
+                    attemptNum++;
+                    animationId = predefine_animations_ids[Math.floor(Math.random() * predefine_animations_ids.length)];
+                    await bot.sendAnimation(channelId, animationId);
+                    return;
+                } catch (error) {
+                    logger.log('ERROR', `animationId=${animationId}, attemptNum=${attemptNum}. cant sent animation because of ${error.message}`, 'main');
+                    lastError = error;
+                }
+            }
+
+            if (lastError) {
+                logger.log('ERROR', `No animation was sent. Attempts reached.`, 'main');
+            }
+        }
+}
+
 async function createPoll(pollTitle) {
     try {
 
-        const animationId = predefine_animations_ids[Math.floor(Math.random()*predefine_animations_ids.length)];
-        await bot.sendAnimation(channelId, animationId);
+        await sendPollAnimation();
 
         const pollOptions = ['Да', 'Нет', 'Посмотреть результаты'];
         const pollMessage = await bot.sendPoll(channelId, pollTitle, pollOptions, {
